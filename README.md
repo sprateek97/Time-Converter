@@ -1,2 +1,2 @@
 # Time-Converter
-Conver decimal time to hours and minutes format
+Convert decimal time to hours and minutes format
