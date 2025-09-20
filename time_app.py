@@ -6,7 +6,6 @@ def dec_to_hm(dec_hours: float):
     dec_hours = abs(dec_hours)
     hours = int(dec_hours)
     minutes = round((dec_hours - hours) * 60)
-    # Handle 60-minute rollover
     if minutes == 60:
         hours += 1
         minutes = 0
@@ -19,7 +18,6 @@ def hm_to_dec(hhmm: str):
         hhmm = hhmm[1:].strip()
 
     if ':' not in hhmm:
-        # Allow plain hours like "6" or "6.5"
         try:
             val = float(hhmm)
             return -val if neg else val
@@ -27,17 +25,17 @@ def hm_to_dec(hhmm: str):
             raise ValueError("Invalid time format. Use HH:MM or a number like 6.5.")
 
     parts = hhmm.split(':')
-    if len(parts) != 2:
-        raise ValueError("Invalid HH:MM format.")
-    h, m = parts
-    h = int(h)
-    if m.strip() == '':
-        m = 0
-    else:
-        m = int(m)
-    if m < 0 or m >= 60:
-        raise ValueError("Minutes must be between 0 and 59.")
-    val = h + m / 60
+    if len(parts) not in (2, 3):
+        raise ValueError("Invalid time format. Use HH:MM or HH:MM:SS.")
+
+    h = int(parts[0])
+    m = int(parts[1]) if parts[1] else 0
+    s = int(parts[2]) if len(parts) == 3 else 0
+
+    if m < 0 or m >= 60 or s < 0 or s >= 60:
+        raise ValueError("Minutes/seconds must be between 0 and 59.")
+
+    val = h + m / 60 + s / 3600
     return -val if neg else val
 
 def format_hm(hours: int, minutes: int):
@@ -59,16 +57,13 @@ def round_decimal(val: float, mode: str):
 def round_minutes(h: int, m: int, mode: str):
     if mode != "Nearest minute":
         return h, m
-    # Already in minutes; ensure rollover handled
     if m == 60:
         return h + 1, 0
     return h, m
 
 # ---------- UI ----------
-st.set_page_config(page_title="Time Converter", page_icon="⏱️", layout="centered")
-st.title("⏱️ Time Converter & Subtractor")
-
-st.markdown("Convert decimal hours ↔ HH:MM and subtract times easily.")
+st.set_page_config(page_title="Time Tools", page_icon="⏱️", layout="centered")
+st.title("⏱️ Time Conversion & Calculation Suite")
 
 with st.expander("Settings"):
     rounding_choice = st.selectbox(
@@ -77,8 +72,15 @@ with st.expander("Settings"):
         index=2
     )
 
-tab1, tab2, tab3, tab4 = st.tabs(["Decimal → HH:MM", "HH:MM → Decimal", "Subtract (decimal)", "Subtract (HH:MM)"])
+tab1, tab2, tab3, tab4, tab5 = st.tabs([
+    "Decimal → HH:MM",
+    "HH:MM → Decimal",
+    "Subtract (decimal)",
+    "Subtract (HH:MM)",
+    "Multi-time Average"
+])
 
+# --- Decimal to HH:MM ---
 with tab1:
     st.subheader("Decimal to HH:MM")
     dec = st.text_input("Enter decimal hours (e.g., 6.8 or -1.25)", "6.8")
@@ -91,9 +93,10 @@ with tab1:
         except Exception as e:
             st.error(str(e))
 
+# --- HH:MM to Decimal ---
 with tab2:
     st.subheader("HH:MM to Decimal")
-    hm = st.text_input("Enter time HH:MM (e.g., 06:38 or -01:15)", "06:38")
+    hm = st.text_input("Enter time HH:MM or HH:MM:SS", "06:38")
     if st.button("Convert to decimal", key="hm2d"):
         try:
             dec_val = hm_to_dec(hm)
@@ -102,6 +105,7 @@ with tab2:
         except Exception as e:
             st.error(str(e))
 
+# --- Subtract decimal ---
 with tab3:
     st.subheader("Subtract decimal hours (A − B)")
     a = st.text_input("A (decimal hours)", "6.8")
@@ -111,7 +115,6 @@ with tab3:
             a_val = float(a)
             b_val = float(b)
             diff = a_val - b_val
-            # Show both decimal and HH:MM
             h, m = dec_to_hm(diff)
             h, m = round_minutes(h, m, rounding_choice)
             diff_dec = round_decimal(diff, rounding_choice)
@@ -120,6 +123,7 @@ with tab3:
         except Exception as e:
             st.error(str(e))
 
+# --- Subtract HH:MM ---
 with tab4:
     st.subheader("Subtract HH:MM (A − B)")
     a_hm = st.text_input("A (HH:MM)", "06:48")
@@ -137,4 +141,28 @@ with tab4:
         except Exception as e:
             st.error(str(e))
 
-st.caption("Tip: Negative results are supported (e.g., 05:00 − 06:15 = -01:15).")
+# --- Multi-time Average ---
+with tab5:
+    st.subheader("Time to Decimal Converter & Average Calculator")
+    st.write("Enter times in `HH:MM` or `HH:MM:SS` format, one per line:")
+    time_input = st.text_area("Times", placeholder="e.g.\n2:30\n3:45\n1:15\n4:00")
+    if st.button("Convert & Calculate Average", key="avg_calc"):
+        if time_input.strip():
+            times = time_input.strip().split("\n")
+            decimal_times = []
+            try:
+                for t in times:
+                    decimal_times.append(hm_to_dec(t))
+                average_decimal = sum(decimal_times) / len(decimal_times)
+                avg_hours = int(average_decimal)
+                avg_minutes = int((average_decimal - avg_hours) * 60)
+                avg_seconds = int((((average_decimal - avg_hours) * 60) - avg_minutes) * 60)
+
+                st.subheader("Results")
+                st.write("**Decimal times:**", [round(d, 4) for d in decimal_times])
+                st.write(f"**Average (decimal):** {round(average_decimal, 4)} hours")
+                st.write(f"**Average (HH:MM:SS):** {avg_hours:02d}:{avg_minutes:02d}:{avg_seconds:02d}")
+            except ValueError as e:
+                st.error(str(e))
+        else:
+            st.warning("Please enter at least one time value.")
