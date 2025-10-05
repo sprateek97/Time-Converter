@@ -72,11 +72,13 @@ with st.expander("Settings"):
         index=2
     )
 
-tab1, tab2, tab3 = st.tabs([
+tab1, tab2, tab3, tab4 = st.tabs([
     "Decimal → HH:MM",
     "HH:MM → Decimal",
-    "Multi-time Average"
+    "Multi-time Average",
+    "Monthly TOS Check"
 ])
+
 
 # --- Decimal to HH:MM ---
 with tab1:
@@ -128,6 +130,35 @@ with tab3:
                 st.error(str(e))
         else:
             st.warning("Please enter at least one time value.")
+
+# --- Monthly TOS Check ---
+with tab4:
+    st.subheader("Monthly TOS Checker")
+    st.write("Compare your current average with the monthly target of **6.8 hours/day**.")
+
+    num_days = st.number_input("Enter number of days completed", min_value=1, max_value=31, value=10)
+    total_time = st.text_input("Enter total time in HH:MM or HH:MM:SS", value="65:00")
+
+    if st.button("Check Monthly TOS", key="monthly_check"):
+        try:
+            total_decimal = hm_to_dec(total_time)
+            current_avg = total_decimal / num_days
+            current_avg_rounded = round(current_avg, 2)
+
+            st.write(f"**Total time (decimal):** {round(total_decimal, 2)} hours")
+            st.write(f"**Current average:** {current_avg_rounded} hours/day")
+
+            if current_avg_rounded < 6.8:
+                diff = round(6.8 - current_avg_rounded, 2)
+                st.error(f"Less TOS ❌ — You are behind by {diff} hours/day.")
+            elif current_avg_rounded == 6.8:
+                st.success("Perfect TOS ✅ — You're right on target!")
+            else:
+                diff = round(current_avg_rounded - 6.8, 2)
+                st.success(f"Surplus TOS 🎉 — You're ahead by {diff} hours/day.")
+        except Exception as e:
+            st.error(str(e))
+
 
 
 
