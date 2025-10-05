@@ -72,7 +72,7 @@ with st.expander("Settings"):
         index=2
     )
 
-tab1, tab2, tab3, tab4, tab5 = st.tabs([
+tab1, tab2, tab3 = st.tabs([
     "Decimal → HH:MM",
     "HH:MM → Decimal",
     "Multi-time Average"
@@ -128,5 +128,6 @@ with tab5:
                 st.error(str(e))
         else:
             st.warning("Please enter at least one time value.")
+
 
 
