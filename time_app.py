@@ -105,42 +105,6 @@ with tab2:
         except Exception as e:
             st.error(str(e))
 
-# --- Subtract decimal ---
-with tab3:
-    st.subheader("Subtract decimal hours (A − B)")
-    a = st.text_input("A (decimal hours)", "6.8")
-    b = st.text_input("B (decimal hours)", "6.63")
-    if st.button("Compute A − B (decimal)", key="sub_dec"):
-        try:
-            a_val = float(a)
-            b_val = float(b)
-            diff = a_val - b_val
-            h, m = dec_to_hm(diff)
-            h, m = round_minutes(h, m, rounding_choice)
-            diff_dec = round_decimal(diff, rounding_choice)
-            st.info(f"Decimal: {diff_dec}")
-            st.success(f"HH:MM: {format_hm(h, m)}")
-        except Exception as e:
-            st.error(str(e))
-
-# --- Subtract HH:MM ---
-with tab4:
-    st.subheader("Subtract HH:MM (A − B)")
-    a_hm = st.text_input("A (HH:MM)", "06:48")
-    b_hm = st.text_input("B (HH:MM)", "06:38")
-    if st.button("Compute A − B (HH:MM)", key="sub_hm"):
-        try:
-            a_val = hm_to_dec(a_hm)
-            b_val = hm_to_dec(b_hm)
-            diff = a_val - b_val
-            h, m = dec_to_hm(diff)
-            h, m = round_minutes(h, m, rounding_choice)
-            diff_dec = round_decimal(diff, rounding_choice)
-            st.info(f"Decimal: {diff_dec}")
-            st.success(f"HH:MM: {format_hm(h, m)}")
-        except Exception as e:
-            st.error(str(e))
-
 # --- Multi-time Average ---
 with tab5:
     st.subheader("Time to Decimal Converter & Average Calculator")
@@ -166,3 +130,4 @@ with tab5:
                 st.error(str(e))
         else:
             st.warning("Please enter at least one time value.")
+
