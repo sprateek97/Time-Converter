@@ -104,7 +104,7 @@ with tab2:
             st.error(str(e))
 
 # --- Multi-time Average ---
-with tab5:
+with tab3:
     st.subheader("Time to Decimal Converter & Average Calculator")
     st.write("Enter times in `HH:MM` or `HH:MM:SS` format, one per line:")
     time_input = st.text_area("Times", placeholder="e.g.\n2:30\n3:45\n1:15\n4:00")
@@ -128,6 +128,7 @@ with tab5:
                 st.error(str(e))
         else:
             st.warning("Please enter at least one time value.")
+
 
 
 
